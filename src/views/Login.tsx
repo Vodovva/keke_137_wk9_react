@@ -3,27 +3,38 @@ import { useNavigate } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
-import { UserFormDataType, CategoryType  } from '../types';
+import { UserFormDataType, CategoryType, UserType } from '../types';
+import { login, getMe } from '../lib/apiWrapper';
+
 
 type LoginProps = {
-    flashMessage: (newMessage:string|null, newCategory:CategoryType|null) => void
+    flashMessage: (newMessage:string|null, newCategory:CategoryType|null) => void,
+    logUserIn: (user: UserType) => void
 }
 
-export default function Login({ flashMessage }: LoginProps) {
+export default function Login({ flashMessage, logUserIn }: LoginProps) {
     const navigate = useNavigate();
-    
+
     const [userFormData, setUserFormData] = useState<Partial<UserFormDataType>>({ username: '', password: ''})
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setUserFormData({...userFormData, [e.target.name]: e.target.value})
     }
 
-    const handleFormSubmit = (e:React.FormEvent) => {
+    const handleFormSubmit = async (e:React.FormEvent) => {
         e.preventDefault();
 
-        console.log(userFormData);
-        flashMessage('You submitted the Login Form', 'danger')
-        navigate('/')
+        let response = await login(userFormData.username!, userFormData.password!)
+        if (response.error){
+            flashMessage(response.error, 'danger')
+        } else {
+            localStorage.setItem('token', response.data?.token as string)
+            localStorage.setItem('tokenExp', response.data?.tokenExpiration as string)
+            let userResponse = await getMe(response.data?.token as string)
+            logUserIn(userResponse.data!)
+            flashMessage('You have successfully logged in', 'success')
+            navigate('/')
+        }
     }
 
 
@@ -44,6 +55,6 @@ export default function Login({ flashMessage }: LoginProps) {
                     </Form>
                 </Card.Body>
             </Card>
-    </>
+        </>
     )
 }

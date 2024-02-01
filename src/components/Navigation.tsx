@@ -4,22 +4,23 @@ import Nav from 'react-bootstrap/Nav';
 import Container from 'react-bootstrap/Container';
 
 type NavigationProps = {
-    isLoggedIn: boolean
-};
+    isLoggedIn: boolean,
+    handleClick: () => void
+}
 
-export default function Navigation({ isLoggedIn }: NavigationProps) {
-    console.log(isLoggedIn);
+export default function Navigation({ isLoggedIn, handleClick }: NavigationProps) {
+    // console.log(isLoggedIn);
     return (
         <Navbar expand='lg' bg='dark' data-bs-theme='dark'>
             <Container>
                 <Navbar.Brand as={Link} to='/'>Kekambas Blog</Navbar.Brand>
                 <Navbar.Toggle aria-controls='nav-collapse' />
                 <Navbar.Collapse id="nav-collapse">
-                <Nav className='me-auto'>
+                    <Nav className='me-auto'>
                         { isLoggedIn ? (
                             <>
                                 <Nav.Link href='/'>Create Post</Nav.Link>
-                                <Nav.Link href='/'>Log Out</Nav.Link>
+                                <Nav.Link as={Link} to='/' onClick={handleClick}>Log Out</Nav.Link>
                             </>
                         ) : (
                             <>
@@ -30,7 +31,6 @@ export default function Navigation({ isLoggedIn }: NavigationProps) {
                     </Nav>
                 </Navbar.Collapse>
             </Container>
-
         </Navbar>
     )
 }

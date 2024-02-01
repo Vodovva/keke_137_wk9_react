@@ -4,6 +4,8 @@ import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import { UserFormDataType, CategoryType } from '../types';
+import { register } from '../lib/apiWrapper';
+
 
 type SignUpProps = {
     flashMessage: (newMessage:string|null, newCategory:CategoryType|null)=>void
@@ -28,14 +30,19 @@ export default function SignUp({ flashMessage }: SignUpProps) {
         setUserFormData({...userFormData, [e.target.name]: e.target.value})
     }
 
-    const handleFormSubmit = (e:React.FormEvent) => {
+    const handleFormSubmit = async (e:React.FormEvent) => {
         e.preventDefault();
 
-        console.log(userFormData);
-        flashMessage('You have submitted the Sign Up Form', 'success')
-        navigate('/');
+        let response = await register(userFormData);
+        if (response.error){
+            flashMessage(response.error, 'danger')
+        } else {
+            let newUser = response.data
+            flashMessage(`Congrats ${newUser?.firstName} ${newUser?.lastName}, you have signed up with the username: ${newUser?.username}`, 'success');
+            navigate('/login');
+        }
     }
-    
+
     const disableSubmit = userFormData.password.length < 5 || userFormData.password !== userFormData.confirmPass
 
     return (
@@ -61,7 +68,7 @@ export default function SignUp({ flashMessage }: SignUpProps) {
 
                         <Form.Label>Confirm Password</Form.Label>
                         <Form.Control name='confirmPass' type='password' placeholder='Re-Enter Password' value={userFormData.confirmPass} onChange={handleInputChange}/>
-                        {disableSubmit && <Form.Text className='danger'>Your passwords must be at least 6 characters and match</Form.Text>}
+                        {disableSubmit && <Form.Text className='text-danger'>Your passwords must be at least 6 characters and match</Form.Text>}
 
                         <Button type='submit' variant='outline-primary' className='w-100 mt-3' disabled={disableSubmit}>Sign Up</Button>
                     </Form>
